@@ -1,5 +1,5 @@
 import random
-from locust import HttpUser, task, between
+from locust import HttpUser, task, constant
 
 SAMPLE_TEXTS = [
     "Без труда не выловишь и рыбку из пруда.",
@@ -16,13 +16,10 @@ SAMPLE_TEXTS = [
 ]
 
 class EmbeddingUser(HttpUser):
-    wait_time = between(0.1, 0.5)
+    wait_time = constant(0.5)
 
     @task
     def embed_text(self):
         text = random.choice(SAMPLE_TEXTS)
         self.client.post("/embed", json={"text": text})
 
-    @task(1)
-    def health_check(self):
-        self.client.get("/health")
