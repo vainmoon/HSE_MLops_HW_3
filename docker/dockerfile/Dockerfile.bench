@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+
+WORKDIR /bench
+
+COPY bench/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY bench/ .
+
+CMD ["locust", "-f", "locustfile.py", "--host", "http://app:8000"]

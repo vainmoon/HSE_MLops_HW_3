@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: dockerfile/Dockerfile.app
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_NAME=sergeyzh/rubert-mini-frida
+    volumes:
+      - model_cache:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  bench:
+    build:
+      context: ..
+      dockerfile: dockerfile/Dockerfile.bench
+    ports:
+      - "8089:8089"
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  model_cache:
