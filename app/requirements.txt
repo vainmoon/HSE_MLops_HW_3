@@ -3,3 +3,4 @@ uvicorn==0.34.0
 sentence-transformers==3.4.1
 torch==2.6.0
 pydantic==2.11.1
+onnxruntime==1.21.0
