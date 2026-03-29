@@ -11,6 +11,19 @@ class OnnxBackend:
             providers=["CPUExecutionProvider"],
         )
 
+    def encode_batch(self, texts: list[str]) -> list[list[float]]:
+        inputs = self.tokenizer(
+            texts,
+            return_tensors="np",
+            padding=True,
+            truncation=True,
+            max_length=512,
+        )
+        outputs = self.session.run(None, dict(inputs))
+        embeddings = self._mean_pooling(outputs[0], inputs["attention_mask"])
+        embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+        return embeddings.tolist()
+
     def encode(self, text: str) -> list[float]:
         inputs = self.tokenizer(
             text,

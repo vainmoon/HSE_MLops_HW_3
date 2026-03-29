@@ -1,4 +1,5 @@
 from .base import BaseBackend
+from .dynamic import DynamicBatchingBackend
 from .onnx import OnnxBackend
 
 

@@ -7,3 +7,6 @@ class BaseBackend:
 
     def encode(self, text: str) -> list[float]:
         return self.model.encode(text, convert_to_numpy=True).tolist()
+
+    def encode_batch(self, texts: list[str]) -> list[list[float]]:
+        return self.model.encode(texts, convert_to_numpy=True).tolist()

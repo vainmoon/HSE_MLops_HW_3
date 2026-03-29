@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import logging
+import os
 import tempfile
 from pathlib import Path
 
@@ -24,11 +25,15 @@ except Exception:
     logger.warning("Docker socket unavailable — resource stats will be skipped")
 
 
+EMBED_ENDPOINT = os.getenv("EMBED_ENDPOINT", "/embed")
+
+
 class BenchmarkRequest(BaseModel):
     users: int = 10
     spawn_rate: int = 1
     duration: int = 30
     target_service: str = "app"
+    endpoint: str = EMBED_ENDPOINT
 
 
 class ResourceCollector:
@@ -83,14 +88,14 @@ async def collect_resources(collector: ResourceCollector, container, stop: async
         await asyncio.sleep(1)
 
 
-def parse_locust_csv(csv_prefix: str) -> dict:
+def parse_locust_csv(csv_prefix: str, endpoint: str) -> dict:
     stats_file = Path(f"{csv_prefix}_stats.csv")
     if not stats_file.exists():
         return {}
 
     with open(stats_file) as f:
         for row in csv.DictReader(f):
-            if row["Name"] == "/embed":
+            if row["Name"] == endpoint:
                 return {
                     "throughput_rps": float(row["Requests/s"]),
                     "latency_p50_ms": float(row["50%"]),
@@ -129,6 +134,7 @@ async def run_benchmark(req: BenchmarkRequest):
             "--host", "http://app:8000",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            env={**os.environ, "EMBED_ENDPOINT": req.endpoint},
         )
 
         resource_task = None
@@ -143,7 +149,7 @@ async def run_benchmark(req: BenchmarkRequest):
         if resource_task:
             await resource_task
 
-        perf = parse_locust_csv(csv_prefix)
+        perf = parse_locust_csv(csv_prefix, req.endpoint)
 
     if not perf:
         raise HTTPException(status_code=500, detail="Failed to parse locust results")

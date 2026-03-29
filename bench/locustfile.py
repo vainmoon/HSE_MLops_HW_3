@@ -1,3 +1,4 @@
+import os
 import random
 from locust import HttpUser, task, constant
 
@@ -15,11 +16,13 @@ SAMPLE_TEXTS = [
     "Век живи — век учись, а дураком помрёшь, но при этом учёного учить — только портить, хотя ученье — свет, а неученье — тьма, и грамоте учиться — всегда пригодится, ведь знание — сила, а сила — в правде, и кто владеет знанием, тот владеет миром, потому что мудрость приходит с годами, а годы летят быстро, и нужно ценить каждый день, ибо утро вечера мудренее, а поутру все дела спорятся лучше.",
 ]
 
+EMBED_ENDPOINT = os.getenv("EMBED_ENDPOINT", "/embed")
+
+
 class EmbeddingUser(HttpUser):
     wait_time = constant(0.5)
 
     @task
     def embed_text(self):
         text = random.choice(SAMPLE_TEXTS)
-        self.client.post("/embed", json={"text": text})
-
+        self.client.post(EMBED_ENDPOINT, json={"text": text})

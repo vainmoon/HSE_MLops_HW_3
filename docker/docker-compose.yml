@@ -9,6 +9,9 @@ services:
       - MODEL_NAME=sergeyzh/rubert-mini-frida
       - INFERENCE_BACKEND=onnx
       - ONNX_MODEL_PATH=/models/onnx
+      - DYNAMIC_BATCHING=true
+      - BATCH_MAX_SIZE=32
+      - BATCH_MAX_WAIT_MS=1
     volumes:
       - model_cache:/root/.cache/huggingface
       - ../app:/app
@@ -26,8 +29,11 @@ services:
       dockerfile: docker/dockerfile/Dockerfile.bench
     ports:
       - "8089:8089"
+    environment:
+      - EMBED_ENDPOINT=/embed
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ../bench:/bench
     depends_on:
       app:
         condition: service_healthy
